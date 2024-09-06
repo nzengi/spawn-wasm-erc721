@@ -9,7 +9,7 @@ repository = "https://github.com/nzengi/erc721"
 documentation = "https://docs.rs/erc721"
 homepage = "https://github.com/nzengi/erc721"
 keywords = ["ERC721", "NFT", "WebAssembly", "WASM"]
-categories = ["cryptography", "wasm", "blockchain", "smart-contracts"]
+categories = ["cryptography", "wasm"]
 
 [dependencies]
 wasm-bindgen = "0.2"
