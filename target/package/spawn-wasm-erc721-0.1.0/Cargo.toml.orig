@@ -3,12 +3,12 @@ name = "spawn-wasm-erc721"
 version = "0.1.0"
 authors = ["nzengi < zenginureddin1@gmail.com>"]
 edition = "2021"
-description = "A WASM-based ERC-20 token library for Web3 developers, providing a high-performance, secure, and customizable solution."
+description = "A WASM-based ERC-721 token library for Web3 developers, providing a high-performance, secure, and customizable solution."
 license = "MIT"
 repository = "https://github.com/nzengi/spawn-wasm-erc721"
 homepage = "https://github.com/nzengi/spawn-wasm-erc721"
 readme = "README.md"
-keywords = ["WASM", "ERC20", "blockchain", "WebAssembly", "Rust"]
+keywords = ["WASM", "ERC721", "blockchain", "WebAssembly", "Rust"]
 categories = ["cryptography", "web-programming"]
 
 exclude = [

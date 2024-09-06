@@ -1,6 +1,6 @@
 [package]
 name = "spawn-wasm-erc721"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["nzengi < zenginureddin1@gmail.com>"]
 edition = "2021"
 description = "A WASM-based ERC-721 token library for Web3 developers, providing a high-performance, secure, and customizable solution."

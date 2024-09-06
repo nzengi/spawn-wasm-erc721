@@ -20,12 +20,12 @@ autobins = false
 autoexamples = false
 autotests = false
 autobenches = false
-description = "A WASM-based ERC-20 token library for Web3 developers, providing a high-performance, secure, and customizable solution."
+description = "A WASM-based ERC-721 token library for Web3 developers, providing a high-performance, secure, and customizable solution."
 homepage = "https://github.com/nzengi/spawn-wasm-erc721"
 readme = "README.md"
 keywords = [
     "WASM",
-    "ERC20",
+    "ERC721",
     "blockchain",
     "WebAssembly",
     "Rust",
