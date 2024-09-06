@@ -1,1 +1,0 @@
-/Users/zengi/Desktop/spawn-wasm-erc721/target/package/spawn-wasm-erc721-0.1.0/target/debug/libspawn_wasm_erc721.dylib: /Users/zengi/Desktop/spawn-wasm-erc721/target/package/spawn-wasm-erc721-0.1.0/src/lib.rs

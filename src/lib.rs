@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
-use serde::{Deserialize, Serialize};
 
 /// ERC-721 token yapısı
 #[wasm_bindgen]
@@ -188,25 +187,28 @@ impl ERC721 {
             if owner != caller && !self.is_approved_for_all(owner, caller) {
                 return false;  // Token sahibi veya onaylı değil
             }
-
+    
+            // Token sahibini silmeden önce sahibin kim olduğunu saklayın
+            let owner_clone = owner.clone();
+    
             // Tokenı kaldır ve bakiye güncelle
             self.owner_of.remove(&token_id);
-            let owner_balance = *self.balances.get(&owner).unwrap_or(&0);
-            self.balances.insert(owner.clone(), owner_balance.saturating_sub(1));
-
+            let owner_balance = *self.balances.get(&owner_clone).unwrap_or(&0);
+            self.balances.insert(owner_clone.clone(), owner_balance.saturating_sub(1));
+    
             // Token metadata URI'sini sil
             self.token_uri.remove(&token_id);
-
+    
             // Yakılan tokenı sakla
             self.burned_tokens.insert(token_id, true);
-
+    
             // Olayı logla
-            Self::log_event("Burn", &format!("TokenID: {}, Owner: {}", token_id, owner));
-
+            Self::log_event("Burn", &format!("TokenID: {}, Owner: {}", token_id, owner_clone));
+    
             return true;
         }
         false
-    }
+    }    
 
     /// Tokenin metadata URI'sini döndürür.
     pub fn token_uri(&self, token_id: u64) -> Option<String> {

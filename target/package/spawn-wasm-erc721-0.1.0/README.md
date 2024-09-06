@@ -1,1 +1,0 @@
-## Spawn-WASM-ERC721: Advanced ERC-721 Implementation
