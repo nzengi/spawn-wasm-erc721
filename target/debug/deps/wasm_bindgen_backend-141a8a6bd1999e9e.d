@@ -1,0 +1,10 @@
+/Users/zengi/Desktop/spawn-wasm-erc721/target/debug/deps/libwasm_bindgen_backend-141a8a6bd1999e9e.rmeta: /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/lib.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/error.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/ast.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/codegen.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/encode.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/util.rs
+
+/Users/zengi/Desktop/spawn-wasm-erc721/target/debug/deps/wasm_bindgen_backend-141a8a6bd1999e9e.d: /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/lib.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/error.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/ast.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/codegen.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/encode.rs /Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/util.rs
+
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/lib.rs:
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/error.rs:
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/ast.rs:
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/codegen.rs:
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/encode.rs:
+/Users/zengi/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasm-bindgen-backend-0.2.93/src/util.rs:

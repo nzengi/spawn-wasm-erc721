@@ -11,6 +11,10 @@ readme = "README.md"
 keywords = ["WASM", "ERC20", "blockchain", "WebAssembly", "Rust"]
 categories = ["cryptography", "web-programming"]
 
+exclude = [
+    "target/*",
+]
+
 [lib]
 crate-type = ["cdylib"]
 

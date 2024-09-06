@@ -15,6 +15,7 @@ name = "spawn-wasm-erc721"
 version = "0.1.0"
 authors = ["nzengi < zenginureddin1@gmail.com>"]
 build = false
+exclude = ["target/*"]
 autobins = false
 autoexamples = false
 autotests = false
