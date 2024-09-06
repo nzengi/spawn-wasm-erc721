@@ -1,22 +1,35 @@
 [package]
-name = "spawn-wasm-erc721"
-version = "0.1.1"
-authors = ["nzengi < zenginureddin1@gmail.com>"]
-edition = "2021"
-description = "A WASM-based ERC-721 token library for Web3 developers, providing a high-performance, secure, and customizable solution."
+name = "erc721"
+version = "0.1.2"
+authors = ["Sizin İsminiz <email@example.com>"]
+edition = "2018"
+description = "A Rust library for creating ERC-721 compliant Non-Fungible Tokens (NFTs) with WebAssembly (WASM) support."
 license = "MIT"
-repository = "https://github.com/nzengi/spawn-wasm-erc721"
-homepage = "https://github.com/nzengi/spawn-wasm-erc721"
-readme = "README.md"
-keywords = ["WASM", "ERC721", "blockchain", "WebAssembly", "Rust"]
-categories = ["cryptography", "web-programming"]
-
-exclude = [
-    "target/*",
-]
-
-[lib]
-crate-type = ["cdylib"]
+repository = "https://github.com/nzengi/erc721"
+documentation = "https://docs.rs/erc721"
+homepage = "https://github.com/nzengi/erc721"
+keywords = ["ERC721", "NFT", "WebAssembly", "WASM", "blockchain", "smart contract"]
+categories = ["cryptography", "wasm", "blockchain", "smart-contracts"]
 
 [dependencies]
 wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+web-sys = "0.3"  # WebAssembly için loglama işlemleri
+console_error_panic_hook = "0.1"  # WASM hata ayıklama
+
+exclude = [
+    "target/"
+]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies.stdweb]
+version = "0.4"
+
+[build-dependencies]
+wasm-bindgen-cli = "0.2"
