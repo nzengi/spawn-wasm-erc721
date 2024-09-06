@@ -1,5 +1,5 @@
 [package]
-name = "erc721"
+name = "spawn-wasm-erc721"
 version = "0.1.2"
 authors = ["nzengi <zenginureddin1@gmail.com>"]
 edition = "2018"
