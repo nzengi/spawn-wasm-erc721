@@ -8,7 +8,7 @@ license = "MIT"
 repository = "https://github.com/nzengi/erc721"
 documentation = "https://docs.rs/erc721"
 homepage = "https://github.com/nzengi/erc721"
-keywords = ["ERC721", "NFT", "WebAssembly", "WASM", "smart contract"]
+keywords = ["ERC721", "NFT", "WebAssembly", "WASM"]
 categories = ["cryptography", "wasm", "blockchain", "smart-contracts"]
 
 [dependencies]
