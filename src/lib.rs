@@ -1,230 +1,148 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use wasm_bindgen::prelude::*;
+use web_sys::console;
 
-/// ERC-721 token yapısı
+/// A library for managing ownership and roles in a contract
 #[wasm_bindgen]
-pub struct ERC721 {
-    owner: String,  // Kontratın sahibi
-    name: String,
-    symbol: String,
-    owner_of: HashMap<u64, String>,   // Token ID -> Sahip Adresi
-    balances: HashMap<String, u64>,   // Kullanıcı -> Token Sayısı
-    token_approvals: HashMap<u64, String>,  // Token ID -> Onaylanan Adres
-    operator_approvals: HashMap<String, HashMap<String, bool>>,  // Kullanıcı -> Operatör -> Onay Durumu
-    token_uri: HashMap<u64, String>,  // Token ID -> Metadata URI
-    burned_tokens: HashMap<u64, bool>,  // Yakılan tokenlar
+pub struct RoleManager {
+    owner: String,
+    roles: HashMap<String, HashSet<String>>, // Role -> Set of Users
 }
 
 #[wasm_bindgen]
-impl ERC721 {
-    /// Yeni bir ERC-721 kontratı oluşturur. Bu fonksiyon kontratı dağıtan kişiyi kontrat sahibi olarak belirler.
+impl RoleManager {
+    /// Initializes a new contract with the owner and role management
     #[wasm_bindgen(constructor)]
-    pub fn new(owner: &str, name: &str, symbol: &str) -> ERC721 {
-        ERC721 {
-            owner: owner.to_string(),
-            name: name.to_string(),
-            symbol: symbol.to_string(),
-            owner_of: HashMap::new(),
-            balances: HashMap::new(),
-            token_approvals: HashMap::new(),
-            operator_approvals: HashMap::new(),
-            token_uri: HashMap::new(),
-            burned_tokens: HashMap::new(),
+    pub fn new(owner: String) -> RoleManager {
+        Self::log_event("New RoleManager", &format!("Owner: {}", owner));
+        RoleManager {
+            owner,
+            roles: HashMap::new(),
         }
     }
 
-    /// Kontrat sahibini kontrol eder.
-    fn only_owner(&self, caller: &str) -> bool {
-        self.owner == caller
+    /// Returns the current owner of the contract
+    pub fn get_owner(&self) -> String {
+        self.owner.clone()
     }
 
-    /// Olayları loglamak için basit bir log fonksiyonu
-    fn log_event(event_name: &str, details: &str) {
-        web_sys::console::log_2(&event_name.into(), &details.into());
+    /// Transfers ownership to a new user (only the current owner can call this)
+    pub fn transfer_ownership(&mut self, current_owner: String, new_owner: String) -> Result<(), String> {
+        if current_owner != self.owner {
+            Self::log_event("Ownership Transfer Failed", "Unauthorized attempt");
+            return Err("Only the current owner can transfer ownership".to_string());
+        }
+        self.owner = new_owner.clone();
+        Self::log_event("Ownership Transferred", &format!("New Owner: {}", new_owner));
+        Ok(())
     }
 
-    /// Token adını döndürür.
-    pub fn name(&self) -> String {
-        self.name.clone()
-    }
-
-    /// Token sembolünü döndürür.
-    pub fn symbol(&self) -> String {
-        self.symbol.clone()
-    }
-
-    /// Belirli bir tokenin sahibini sorgular.
-    pub fn owner_of(&self, token_id: u64) -> Option<String> {
-        self.owner_of.get(&token_id).cloned()
-    }
-
-    /// Bir kullanıcının kaç tane token sahibi olduğunu döndürür.
-    pub fn balance_of(&self, owner: &str) -> u64 {
-        *self.balances.get(owner).unwrap_or(&0)
-    }
-
-    /// Token mint işlemi (oluşturma). Bu işlem sadece kontrat sahibi tarafından yapılabilir.
-    pub fn mint(&mut self, caller: &str, recipient: &str, token_id: u64, token_uri: &str) -> bool {
-        if token_id == 0 {
-            return false; // Geçersiz token ID
+    /// Assigns a role to a specific user (only the owner can assign roles)
+    pub fn assign_role(&mut self, owner: String, role: String, user: String) -> Result<(), String> {
+        if owner != self.owner {
+            Self::log_event("Assign Role Failed", "Unauthorized attempt");
+            return Err("Only the owner can assign roles".to_string());
         }
 
-        // Kontrat sahibi kontrolü
-        if !self.only_owner(caller) {
-            return false;  // Sadece kontrat sahibi mint yapabilir
-        }
-
-        // Token ID'nin daha önce mint edilmediğini kontrol et
-        if self.owner_of.contains_key(&token_id) {
-            return false;  // Token ID zaten mevcut
-        }
-
-        // Token sahibini ve bakiyesini güncelle
-        self.owner_of.insert(token_id, recipient.to_string());
-        let recipient_balance = self.balances.get(recipient).unwrap_or(&0);
-        self.balances.insert(recipient.to_string(), recipient_balance + 1);
-
-        // Token URI'sini ekle
-        self.token_uri.insert(token_id, token_uri.to_string());
-
-        // Olayı logla
-        Self::log_event("Mint", &format!("TokenID: {}, Recipient: {}", token_id, recipient));
-
-        true
-    }
-
-    /// Token transferi yapar. Sadece token sahibi, onaylanmış adresler veya tüm tokenlar için yetkilendirilmiş operatörler transfer yapabilir.
-    pub fn transfer(&mut self, from: &str, to: &str, token_id: u64) -> bool {
-        // Tokenin var olup olmadığını ve sahibini kontrol et
-        if let Some(owner) = self.owner_of.get(&token_id) {
-            // Token sahibi ya da onaylanan adres veya operatör kontrolü
-            if owner != from && self.get_approved(token_id) != Some(from.to_string()) 
-                && !self.is_approved_for_all(owner, from) {
-                return false;  // Token sahibi, onaylı adres veya operatör değil
-            }
+        let role_users = self.roles.entry(role.clone()).or_insert(HashSet::new());
+        if role_users.insert(user.clone()) {
+            Self::log_event("Role Assigned", &format!("Role: {}, User: {}", role, user));
         } else {
-            return false;  // Token mevcut değil
+            Self::log_event("Role Assignment Skipped", &format!("User: {} already has the role: {}", user, role));
         }
-
-        // Bakiye kontrolü
-        let from_balance = *self.balances.get(from).unwrap_or(&0);
-        if from_balance == 0 {
-            return false;  // Bakiye yetersiz
-        }
-
-        // Sahipliği değiştir ve bakiyeleri güncelle
-        self.owner_of.insert(token_id, to.to_string());
-        let to_balance = *self.balances.get(to).unwrap_or(&0);
-
-        self.balances.insert(from.to_string(), from_balance - 1);
-        self.balances.insert(to.to_string(), to_balance + 1);
-
-        // Önceki onaylı adresi sıfırla
-        self.token_approvals.remove(&token_id);
-
-        // Olayı logla
-        Self::log_event("Transfer", &format!("From: {}, To: {}, TokenID: {}", from, to, token_id));
-
-        true
+        Ok(())
     }
 
-    /// Token ID için onaylı adresi döndürür.
-    pub fn get_approved(&self, token_id: u64) -> Option<String> {
-        self.token_approvals.get(&token_id).cloned()
-    }
+    /// Removes a role from a specific user (only the owner can remove roles)
+    pub fn remove_role(&mut self, owner: String, role: String, user: String) -> Result<(), String> {
+        if owner != self.owner {
+            Self::log_event("Remove Role Failed", "Unauthorized attempt");
+            return Err("Only the owner can remove roles".to_string());
+        }
 
-    /// Token için onay verir. `token_id` tokeninin `approved_address` adresine transferine izin verir. 
-    /// Bu işlem sadece token sahibi tarafından yapılabilir.
-    pub fn approve(&mut self, caller: &str, token_id: u64, approved_address: &str) -> bool {
-        if let Some(owner) = self.owner_of.get(&token_id) {
-            if owner != caller {
-                return false;  // Sadece token sahibi onay verebilir
+        if let Some(role_users) = self.roles.get_mut(&role) {
+            if role_users.remove(&user) {
+                Self::log_event("Role Removed", &format!("Role: {}, User: {}", role, user));
+            } else {
+                Self::log_event("Remove Role Skipped", &format!("User: {} does not have the role: {}", user, role));
             }
-            self.token_approvals.insert(token_id, approved_address.to_string());
+        }
+        Ok(())
+    }
 
-            // Olayı logla
-            Self::log_event("Approval", &format!("TokenID: {}, ApprovedAddress: {}", token_id, approved_address));
-            return true;
+    /// Checks if a user has a specific role
+    pub fn has_role(&self, role: String, user: String) -> bool {
+        if let Some(role_users) = self.roles.get(&role) {
+            return role_users.contains(&user);
         }
         false
     }
 
-    /// Tüm tokenler için bir operatör belirler. Bu operatör, belirlenen kullanıcının tüm tokenları için işlem yapabilir.
-    pub fn set_approval_for_all(&mut self, owner: &str, operator: &str, approved: bool) {
-        let approvals = self.operator_approvals.entry(owner.to_string()).or_insert(HashMap::new());
-        approvals.insert(operator.to_string(), approved);
-
-        // Olayı logla
-        Self::log_event("ApprovalForAll", &format!("Owner: {}, Operator: {}, Approved: {}", owner, operator, approved));
+    /// Checks if a user is the current owner
+    pub fn is_owner(&self, user: String) -> bool {
+        self.owner == user
     }
 
-    /// Bir operatörün tüm tokenlar için onaylı olup olmadığını kontrol eder.
-    pub fn is_approved_for_all(&self, owner: &str, operator: &str) -> bool {
-        self.operator_approvals.get(owner)
-            .and_then(|approvals| approvals.get(operator))
-            .cloned()
-            .unwrap_or(false)
+    /// Provides role-based access control (only the owner or users with the specified role can call this)
+    pub fn role_based_access(&self, user: String, role: String) -> bool {
+        self.is_owner(user.clone()) || self.has_role(role, user)
     }
 
-    /// Bir operatörün onayını kaldırır.
-    pub fn revoke_operator(&mut self, owner: &str, operator: &str) -> bool {
-        if let Some(approvals) = self.operator_approvals.get_mut(owner) {
-            if approvals.contains_key(operator) {
-                approvals.remove(operator);
-                
-                // Olayı logla
-                Self::log_event("RevokeOperator", &format!("Owner: {}, Operator: {}", owner, operator));
-                return true;
-            }
-        }
-        false
+    /// Lists all users assigned to a specific role
+    pub fn list_role_users(&self, role: String) -> Vec<String> {
+        self.roles
+            .get(&role)
+            .map(|users| users.iter().cloned().collect())
+            .unwrap_or_else(Vec::new)
     }
 
-    /// Token yakma işlemi (burn). Token yok edilir ve sahibi artık o tokena sahip olmaz. Yakılan tokenlar `burned_tokens` içinde saklanır.
-    pub fn burn(&mut self, caller: &str, token_id: u64) -> bool {
-        if let Some(owner) = self.owner_of.get(&token_id) {
-            // Token sahibi veya onaylı olup olmadığını kontrol et
-            if owner != caller && !self.is_approved_for_all(owner, caller) {
-                return false;  // Token sahibi veya onaylı değil
-            }
-    
-            // Token sahibini silmeden önce sahibin kim olduğunu saklayın
-            let owner_clone = owner.clone();
-    
-            // Tokenı kaldır ve bakiye güncelle
-            self.owner_of.remove(&token_id);
-            let owner_balance = *self.balances.get(&owner_clone).unwrap_or(&0);
-            self.balances.insert(owner_clone.clone(), owner_balance.saturating_sub(1));
-    
-            // Token metadata URI'sini sil
-            self.token_uri.remove(&token_id);
-    
-            // Yakılan tokenı sakla
-            self.burned_tokens.insert(token_id, true);
-    
-            // Olayı logla
-            Self::log_event("Burn", &format!("TokenID: {}, Owner: {}", token_id, owner_clone));
-    
-            return true;
-        }
-        false
-    }    
+    /// Logs events to the console for monitoring
+    fn log_event(event: &str, details: &str) {
+        console::log_2(&event.into(), &details.into());
+    }
+}
 
-    /// Tokenin metadata URI'sini döndürür.
-    pub fn token_uri(&self, token_id: u64) -> Option<String> {
-        self.token_uri.get(&token_id).cloned()
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ownership_transfer() {
+        let mut role_manager = RoleManager::new("owner".to_string());
+
+        // Correct ownership transfer
+        assert!(role_manager.transfer_ownership("owner".to_string(), "new_owner".to_string()).is_ok());
+        assert_eq!(role_manager.get_owner(), "new_owner".to_string());
+
+        // Unauthorized user tries to transfer ownership
+        assert!(role_manager.transfer_ownership("wrong_user".to_string(), "owner".to_string()).is_err());
     }
 
-    /// Kontrat sahibini değiştirme. Bu işlem sadece mevcut kontrat sahibi tarafından yapılabilir.
-    pub fn transfer_ownership(&mut self, caller: &str, new_owner: &str) -> bool {
-        if !self.only_owner(caller) {
-            return false;  // Sadece mevcut sahip değiştirme yapabilir
-        }
-        self.owner = new_owner.to_string();
+    #[test]
+    fn test_assign_role() {
+        let mut role_manager = RoleManager::new("owner".to_string());
 
-        // Olayı logla
-        Self::log_event("OwnershipTransferred", &format!("NewOwner: {}", new_owner));
+        // Successful role assignment
+        assert!(role_manager.assign_role("owner".to_string(), "admin".to_string(), "user1".to_string()).is_ok());
+        assert!(role_manager.has_role("admin".to_string(), "user1".to_string()));
 
-        true
+        // Unauthorized user tries to assign a role
+        assert!(role_manager.assign_role("wrong_user".to_string(), "admin".to_string(), "user2".to_string()).is_err());
+    }
+
+    #[test]
+    fn test_remove_role() {
+        let mut role_manager = RoleManager::new("owner".to_string());
+
+        // Assign a role
+        role_manager.assign_role("owner".to_string(), "admin".to_string(), "user1".to_string()).unwrap();
+        assert!(role_manager.has_role("admin".to_string(), "user1".to_string()));
+
+        // Successful role removal
+        assert!(role_manager.remove_role("owner".to_string(), "admin".to_string(), "user1".to_string()).is_ok());
+        assert!(!role_manager.has_role("admin".to_string(), "user1".to_string()));
+
+        // Unauthorized user tries to remove a role
+        assert!(role_manager.remove_role("wrong_user".to_string(), "admin".to_string(), "user1".to_string()).is_err());
     }
 }
